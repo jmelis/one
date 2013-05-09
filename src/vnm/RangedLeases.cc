@@ -408,7 +408,7 @@ int RangedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int RangedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui64[])
+int RangedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid)
 {
     unsigned int num_ip;
     unsigned int num_mac[2];

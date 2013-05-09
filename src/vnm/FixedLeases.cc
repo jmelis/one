@@ -17,6 +17,7 @@
 
 #include "FixedLeases.h"
 #include "NebulaLog.h"
+#include "Nebula.h"
 
 #include <string.h>
 
@@ -266,8 +267,14 @@ int FixedLeases::unset(const string& ip)
         return 0; //Not in the map, not leased
     }
 
-    // Flip used flag to false
-    it_ip->second->used = false;
+    if ( !it_ip->second->is_reserved() )
+    {
+        // Flip used flag to false
+        it_ip->second->used = false;
+
+        n_used--;
+    }
+
     it_ip->second->vid  = -1;
 
     // Update the lease
@@ -295,10 +302,10 @@ int FixedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
 
         if (current->second->used == false)
         {
-            ostringstream oss;
-
             current->second->used = true;
             current->second->vid  = vid;
+
+            n_used++;
 
             rc = update_lease(current->second);
 
@@ -319,12 +326,15 @@ int FixedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int FixedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui64[])
+int FixedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid)
 {
     map<unsigned int,Lease *>::iterator it;
 
     unsigned int    num_ip;
     int             rc;
+
+    User *          user;
+    UserPool *      upool = Nebula::instance().get_upool();
 
     rc = Leases::Lease::ip_to_number(ip,num_ip);
 
@@ -339,12 +349,34 @@ int FixedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui6
     {
         return -1;
     }
-    else if (it->second->used) //it is in use
+    else if (it->second->is_used()) //it is in use
     {
         return -1;
     }
 
-    it->second->used = true;
+    if (it->second->is_reserved()) // check reservation
+    {
+        user = upool->get(uid, false);
+
+        if ( user == 0 )
+        {
+            return -1;
+        }
+
+        int gid = user->get_gid();
+
+        if (gid != GroupPool::ONEADMIN_ID &&
+            it->second->uid != uid && it->second->gid != gid)
+        {
+            return -1; //it is reserved for another user/group
+        }
+    }
+    else
+    {
+        it->second->used = true;
+        n_used++;
+    }
+
     it->second->vid  = vid;
 
     Leases::Lease::mac_to_string(it->second->mac,mac);
@@ -369,15 +401,6 @@ int FixedLeases::update_lease(Lease * lease)
     if ( sql_xml == 0 )
     {
         return -1;
-    }
-
-    if( lease->used )
-    {
-        n_used++;
-    }
-    else
-    {
-        n_used--;
     }
 
     oss << "UPDATE " << table << " SET body='" << sql_xml << "'"
@@ -459,6 +482,61 @@ int FixedLeases::remove_leases(vector<const Attribute*>&   vector_leases,
     }
 
     return rc;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int FixedLeases::reserve_leases(vector<const Attribute*>&   vector_leases,
+                                string&                     error_msg,
+                                int uid, int gid)
+{
+    const VectorAttribute * single_attr_lease = 0;
+    map<unsigned int, Lease *>::iterator  it;
+
+    unsigned int     i_ip;
+    string           st_ip;
+
+    if ( vector_leases.size() > 0 )
+    {
+        single_attr_lease =
+                dynamic_cast<const VectorAttribute *>(vector_leases[0]);
+    }
+
+    if( single_attr_lease == 0 )
+    {
+        error_msg = "Empty lease description.";
+        return -1;
+    }
+
+    st_ip  = single_attr_lease->vector_value("IP");
+
+    if ( Leases::Lease::ip_to_number(st_ip,i_ip) != 0 )
+    {
+        error_msg = "Wrong Lease format.";
+        return -1;
+    }
+
+    it = leases.find(i_ip);
+
+    if ( it == leases.end() )
+    {
+        error_msg = "Lease is not part of the NET.";
+        return -1;
+    }
+
+    if ( !it->second->is_used() )
+    {
+        it->second->used = true;
+        it->second->vid = -1;
+
+        n_used++;
+    }
+
+    it->second->uid = uid;
+    it->second->gid = gid;
+
+    return update_lease(it->second);
 }
 
 /* -------------------------------------------------------------------------- */

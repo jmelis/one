@@ -67,17 +67,19 @@ public:
      *  @param vid identifier of the VM getting this lease
      *  @param ip ip of lease requested
      *  @param mac mac of the lease
+     *  @param uid of the owner of the VM getting this lease
      *  @return 0 if success
      */
-    int set(int vid, const string&  ip, string&  mac, unsigned int eui64[]);
+    int set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid);
 
     /**
      * Release an used lease, which becomes unused
-     *   @param ip of the lease in use
+     *  @param ip of the lease in use
+     *  @return 0 if success
      */
-    void release(const string& ip)
+    int release(const string& ip)
     {
-        unset(ip);
+        return unset(ip);
     }
 
     /**
@@ -99,6 +101,18 @@ public:
      *  @return 0 on success
      */
     int remove_leases(vector<const Attribute*>& leases, string& error_msg);
+
+    /**
+     *  Reserves leases for user or group
+     *   @param vector_leases vector of VectorAttribute objects. For the
+     *          moment, the vector can only contain one LEASE.
+     *   @param error_msg If the action fails, this message contains
+     *          the reason.
+     *   @param uid of the user to reserve lease
+     *   @param gid of the group to reserve lease
+     *   @return 0 on success
+     */
+    int reserve_leases(vector<const Attribute*>& vector_leases, string& error_msg, int uid, int gid);
 
     /**
      *  Loads the leases from the DB.

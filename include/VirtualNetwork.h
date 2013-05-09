@@ -107,6 +107,18 @@ public:
      */
     int free_leases(VirtualNetworkTemplate* leases, string& error_msg);
 
+     /**
+     * Reserves a Lease for user or group
+     *  @param leases template in the form LEASES = [IP=XX].
+     *          The template can only contain one LEASE definition.
+     *  @param error_msg If the action fails, this message contains
+     *         the reason.
+     *  @param uid of the user to reserve lease
+     *  @param gid of the group to reserve lease
+     *  @return 0 on success
+     */
+    int reserve_leases(VirtualNetworkTemplate* leases, string& error_msg, int uid, int gid);
+
     /**
      *    Gets a new lease for a specific VM
      *    @param vid VM identifier
@@ -129,14 +141,15 @@ public:
      *    @param _ip the ip of the requested lease
      *    @param _mac pointer to string for MAC to be stored into
      *    @param _bridge name of the physical bridge this VN binds to
+     *    @param _uid of the owner of the VM getting the lease
      *    @return 0 if success
      */
-    int set_lease(int vid, const string& _ip, string& _mac, string& _bridge)
+    int set_lease(int vid, const string& _ip, string& _mac, string& _bridge, int _uid)
     {
         unsigned int eui64[2];
 
         _bridge = bridge;
-        return leases->set(vid, _ip, _mac, eui64);
+        return leases->set(vid, _ip, _mac, eui64, _uid);
     };
 
     /**
@@ -144,7 +157,7 @@ public:
      *    @param _ip IP identifying the lease
      *    @return 0 if success
      */
-    void release_lease(const string& ip)
+    int release_lease(const string& ip)
     {
         return leases->release(ip);
     };
@@ -201,9 +214,10 @@ public:
      *  * BRIDGE: for this virtual network
      *  @param nic attribute for the VM template
      *  @param vid of the VM getting the lease
+     *  @param uid of the owner of the VM getting the lease
      *  @return 0 on success
      */
-    int nic_attribute(VectorAttribute * nic, int vid);
+    int nic_attribute(VectorAttribute * nic, int vid, int uid);
 
 private:
 

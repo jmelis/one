@@ -250,7 +250,7 @@ int VirtualNetworkPool::nic_attribute(VectorAttribute * nic,
         return -1;
     }
 
-    int rc = vnet->nic_attribute(nic,vid);
+    int rc = vnet->nic_attribute(nic,vid,uid);
 
     if ( rc == 0 )
     {

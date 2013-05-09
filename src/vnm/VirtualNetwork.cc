@@ -706,7 +706,7 @@ int VirtualNetwork::from_xml(const string &xml_str)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int VirtualNetwork::nic_attribute(VectorAttribute *nic, int vid)
+int VirtualNetwork::nic_attribute(VectorAttribute *nic, int vid, int uid)
 {
     int rc;
 
@@ -731,7 +731,7 @@ int VirtualNetwork::nic_attribute(VectorAttribute *nic, int vid)
     }
     else
     {
-        rc = leases->set(vid,ip,mac, eui64);
+        rc = leases->set(vid,ip,mac, eui64, uid);
     }
 
     if ( rc != 0 )
@@ -845,6 +845,20 @@ int VirtualNetwork::free_leases(VirtualNetworkTemplate * leases_template,
     leases_template->get("LEASES", vector_leases);
 
     return leases->free_leases(vector_leases, error_msg);
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
+int VirtualNetwork::reserve_leases(VirtualNetworkTemplate * leases_template,
+                                  string&                   error_msg,
+                                  int uid, int gid)
+{
+    vector<const Attribute *> vector_leases;
+
+    leases_template->get("LEASES", vector_leases);
+
+    return leases->reserve_leases(vector_leases, error_msg, uid, gid);
 }
 
 /* -------------------------------------------------------------------------- */

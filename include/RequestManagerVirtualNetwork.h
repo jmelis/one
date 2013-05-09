@@ -30,8 +30,9 @@ class RequestManagerVirtualNetwork: public Request
 {
 protected:
     RequestManagerVirtualNetwork(const string& method_name,
-                                 const string& help)
-        :Request(method_name,"A:sis",help)
+                                 const string& help,
+                                 const string& params = "A:sis")
+        :Request(method_name,params,help)
     {
         Nebula& nd  = Nebula::instance();
         pool        = nd.get_vnpool();
@@ -129,6 +130,37 @@ public:
     {
         return vn->free_leases(tmpl, error_str);
     }
+};
+
+/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+
+class VirtualNetworkReserve : public RequestManagerVirtualNetwork
+{
+public:
+    VirtualNetworkReserve():
+        RequestManagerVirtualNetwork("VirtualNetworkReserve",
+                                     "Reserves a virtual network Lease for user or group",
+                                     "A:sisii") {};
+    ~VirtualNetworkReserve(){};
+
+    void request_execute(xmlrpc_c::paramList const& _paramList,
+            RequestAttributes& att) {
+        uid = xmlrpc_c::value_int(_paramList.getInt(3));
+        gid = xmlrpc_c::value_int(_paramList.getInt(4));
+        RequestManagerVirtualNetwork::request_execute(_paramList, att);
+    }
+
+    int leases_action(VirtualNetwork * vn,
+                      VirtualNetworkTemplate * tmpl,
+                      string& error_str)
+    {
+        return vn->reserve_leases(tmpl, error_str, uid, gid);
+    }
+
+private:
+    int uid;
+    int gid;
 };
 
 

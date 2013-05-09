@@ -285,6 +285,8 @@ string& Leases::Lease::to_xml(string& str,
 
     os << "<USED>"<< used  << "</USED>"<<
           "<VID>" << vid   << "</VID>" <<
+          "<UID>" << uid   << "</UID>" <<
+          "<GID>" << gid   << "</GID>" <<
         "</LEASE>";
 
     str = os.str();
@@ -306,6 +308,8 @@ string& Leases::Lease::to_xml_db(string& str) const
             "<MAC_SUFFIX>" << mac[0] << "</MAC_SUFFIX>" <<
             "<USED>"       << used   << "</USED>"<<
             "<VID>"        << vid    << "</VID>" <<
+            "<UID>"        << uid    << "</UID>" <<
+            "<GID>"        << gid    << "</GID>" <<
         "</LEASE>";
 
     str = os.str();
@@ -331,6 +335,9 @@ int Leases::Lease::from_xml(const string &xml_str)
 
     rc += xpath(int_used, "/LEASE/USED", 0);
     rc += xpath(vid, "/LEASE/VID", 0);
+
+    xpath(uid, "/LEASE/UID", -1);
+    xpath(gid, "/LEASE/GID", -1);
 
     used = static_cast<bool>(int_used);
 
@@ -541,7 +548,7 @@ int Leases::hold_leases(vector<const Attribute*>&   vector_leases,
         return -1;
     }
 
-    rc = set(-1, ip, mac, tmp);
+    rc = set(-1, ip, mac, tmp, -1);
 
     if ( rc != 0 )
     {
@@ -561,9 +568,9 @@ int Leases::free_leases(vector<const Attribute*>&   vector_leases,
     const VectorAttribute * single_attr_lease = 0;
     map<unsigned int,Lease *>::iterator it;
 
+    int             rc = 0;
     unsigned int    i_ip;
     string          st_ip;
-    string          mac;
 
     if ( vector_leases.size() > 0 )
     {
@@ -587,15 +594,28 @@ int Leases::free_leases(vector<const Attribute*>&   vector_leases,
 
     it = leases.find(i_ip);
 
-    if ( it == leases.end() || !it->second->used || it->second->vid != -1 )
+    if ( it == leases.end() )
     {
-        error_msg = "Lease is not on hold.";
+        error_msg = "Lease is not part of the NET.";
+        return -1;
+    }
+    else if ( !it->second->is_held() && !it->second->is_reserved() )
+    {
+        error_msg = "Lease is not on hold or reserved.";
         return -1;
     }
 
-    release(st_ip);
+    if ( it->second->is_reserved() )
+    {
+        rc += reserve_leases(vector_leases, error_msg, -1, -1); //unreserve
+    }
 
-    return 0;
+    if ( it->second->is_held() )
+    {
+        rc += release(st_ip);
+    }
+
+    return rc;
 }
 
 /* ************************************************************************** */

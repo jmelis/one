@@ -72,23 +72,25 @@ public:
      *  @param eui64 extended unique identifier
      *  @return 0 if success
      */
-     virtual int get(int vid, string& ip, string& mac, unsigned int *eui64) = 0;
+    virtual int get(int vid, string& ip, string& mac, unsigned int *eui64) = 0;
 
-     /**
-      * Ask for a specific lease in the network
-      *  @param vid identifier of the VM getting this lease
-      *  @param ip ip of lease requested
-      *  @param mac mac of the lease
-      *  @param eui64 extended unique identifier
-      *  @return 0 if success
-      */
-     virtual int set(int vid, const string&  ip, string&  mac, unsigned int *eui64) = 0;
+    /**
+     * Ask for a specific lease in the network
+     *  @param vid identifier of the VM getting this lease
+     *  @param ip ip of lease requested
+     *  @param mac mac of the lease
+     *  @param eui64 extended unique identifier
+     *  @param uid of the owner of the VM getting this lease
+     *  @return 0 if success
+     */
+    virtual int set(int vid, const string&  ip, string&  mac, unsigned int *eui64, int uid) = 0;
 
-     /**
-      * Release an used lease, which becomes unused
-      *   @param ip of the lease in use
-      */
-     virtual void release(const string& ip) = 0;
+    /**
+     * Releases a used lease, which becomes unused
+     *  @param ip of the lease in use
+     *  @return 0 if success
+     */
+    virtual int release(const string& ip) = 0;
 
     /**
      * Adds New leases. (Only implemented for FIXED networks)
@@ -131,6 +133,18 @@ public:
      *  @return 0 on success
      */
     int free_leases(vector<const Attribute*>& vector_leases, string& error_msg);
+
+    /**
+     * Reserves a Lease for user or group. (Only available for FIXED networks)
+     *  @param vector_leases vector of VectorAttribute objects. For the
+     *         moment, the vector can only contain one LEASE.
+     *  @param error_msg If the action fails, this message contains
+     *         the reason.
+     *  @param uid of the user to reserve lease
+     *  @param gid of the group to reserve lease
+     *  @return 0 on success
+     */
+    virtual int reserve_leases(vector<const Attribute*>& vector_leases, string& error_msg, int uid, int gid) = 0;
 
 protected:
     /**
@@ -209,6 +223,24 @@ protected:
         static int prefix6_to_number(const string& prefix, unsigned int ip[]);
 
         /**
+         * Function to check if the Lease is used
+         * @return true if the lease is used
+         */
+        bool is_used() { return used && vid != -1; }
+
+        /**
+         * Function to check if the Lease is reserved
+         * @return true if the lease is reserved
+         */
+        bool is_reserved() { return used && (uid != -1 || gid != -1); }
+
+        /**
+         * Function to check if the Lease is held
+         * @return true if the lease is held
+         */
+        bool is_held() { return used && vid == -1; }
+
+        /**
          * Function to print the Lease object into a string in
          * XML format
          *  @param xml the resulting XML string
@@ -243,6 +275,10 @@ protected:
         int  vid;
 
         bool used;
+
+        int uid;
+
+        int gid;
     };
 
     friend class VirtualNetwork;
