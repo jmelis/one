@@ -525,10 +525,9 @@ int FixedLeases::reserve_leases(vector<const Attribute*>&   vector_leases,
         return -1;
     }
 
-    if ( !it->second->is_used() )
+    if ( !it->second->used && (uid != -1 || gid != -1) )
     {
-        it->second->used = true;
-        it->second->vid = -1;
+        it->second->used = true; //set lease being reserved as used
 
         n_used++;
     }
