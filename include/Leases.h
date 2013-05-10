@@ -165,7 +165,7 @@ protected:
               unsigned int _mac[],
               int          _vid,
               bool         _used)
-                :ObjectXML(),ip(_ip), vid(_vid), used(_used)
+                :ObjectXML(),ip(_ip), vid(_vid), used(_used), uid(-1), gid(-1)
         {
                 mac[1]=_mac[1];
                 mac[0]=_mac[0];
