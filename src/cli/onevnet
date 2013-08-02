@@ -143,6 +143,28 @@ cmd=CommandParser::CmdParser.new(ARGV) do
         end
     end
 
+    reserve_desc = <<-EOT.unindent
+        Reserves a Virtual Network lease for the giver user or group
+    EOT
+
+    # TODO: make uid and gid options, make only one required
+
+    command :reserve, reserve_desc, :vnetid, :ip, :userid, :groupid do
+        helper.perform_action(args[0],options,"lease reserved") do |vn|
+            vn.reserve(args[1], args[2], args[3])
+        end
+    end
+
+    unreserve_desc = <<-EOT.unindent
+        Cancels the reservation of a Virtual Network lease
+    EOT
+
+    command :unreserve, unreserve_desc, :vnetid, :ip do
+        helper.perform_action(args[0],options,"lease unreserved") do |vn|
+            vn.unreserve(args[1])
+        end
+    end
+
     chgrp_desc = <<-EOT.unindent
         Changes the Virtual Network group
     EOT

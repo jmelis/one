@@ -35,7 +35,8 @@ module OpenNebula
             :update     => "vn.update",
             :hold       => "vn.hold",
             :release    => "vn.release",
-            :rename     => "vn.rename"
+            :rename     => "vn.rename",
+            :reserve    => "vn.reserve"
         }
 
         VN_TYPES=%w{RANGED FIXED}
@@ -166,6 +167,32 @@ module OpenNebula
             rc = nil if !OpenNebula.is_error?(rc)
 
             return rc
+        end
+
+        # Reserves a virtual network Lease for the giver user or group
+        #
+        # @param ip [String] IP to reserve
+        # @param uid [Integer] the user id. Set to -1 to leave it unset
+        # @param gid [Integer] the group id. Set to -1 to leave it unset
+        #
+        # @return [nil, OpenNebula::Error] nil in case of success, Error
+        #   otherwise
+        def reserve(ip, uid, gid)
+            lease_template = "LEASES = [ IP = #{ip} ]"
+
+            return call(VN_METHODS[:reserve], @pe_id, lease_template, uid, gid)
+        end
+
+        # Cancels the reservation on a virtual network Lease
+        #
+        # @param ip [String] IP to unreserve
+        #
+        # @return [nil, OpenNebula::Error] nil in case of success, Error
+        #   otherwise
+        def unreserve(ip)
+            lease_template = "LEASES = [ IP = #{ip} ]"
+
+            return call(VN_METHODS[:reserve], @pe_id, lease_template, -1, -1)
         end
 
         # Changes the owner/group
