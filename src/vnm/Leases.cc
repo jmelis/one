@@ -568,7 +568,6 @@ int Leases::free_leases(vector<const Attribute*>&   vector_leases,
     const VectorAttribute * single_attr_lease = 0;
     map<unsigned int,Lease *>::iterator it;
 
-    int             rc = 0;
     unsigned int    i_ip;
     string          st_ip;
 
@@ -594,28 +593,15 @@ int Leases::free_leases(vector<const Attribute*>&   vector_leases,
 
     it = leases.find(i_ip);
 
-    if ( it == leases.end() )
+    if ( it == leases.end() || !it->second->is_held() )
     {
-        error_msg = "Lease is not part of the NET.";
-        return -1;
-    }
-    else if ( !it->second->is_held() && !it->second->is_reserved() )
-    {
-        error_msg = "Lease is not on hold or reserved.";
+        error_msg = "Lease is not on hold.";
         return -1;
     }
 
-    if ( it->second->is_reserved() )
-    {
-        rc += reserve_leases(vector_leases, error_msg, -1, -1); //unreserve
-    }
+    release(st_ip);
 
-    if ( it->second->is_held() )
-    {
-        rc += release(st_ip);
-    }
-
-    return rc;
+    return 0;
 }
 
 /* ************************************************************************** */

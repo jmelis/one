@@ -267,13 +267,10 @@ int FixedLeases::unset(const string& ip)
         return 0; //Not in the map, not leased
     }
 
-    if ( !it_ip->second->is_reserved() )
-    {
-        // Flip used flag to false
-        it_ip->second->used = false;
+    // Flip used flag to false
+    it_ip->second->used = false;
 
-        n_used--;
-    }
+    n_used--;
 
     it_ip->second->vid  = -1;
 
@@ -523,13 +520,6 @@ int FixedLeases::reserve_leases(vector<const Attribute*>&   vector_leases,
     {
         error_msg = "Lease is not part of the NET.";
         return -1;
-    }
-
-    if ( !it->second->used && (uid != -1 || gid != -1) )
-    {
-        it->second->used = true; //set lease being reserved as used
-
-        n_used++;
     }
 
     it->second->uid = uid;
