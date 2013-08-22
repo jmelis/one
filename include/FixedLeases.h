@@ -58,19 +58,24 @@ public:
      *   @param vid identifier of the VM getting this lease
      *   @param ip ip of the returned lease
      *   @param mac mac of  the returned lease
+     *   @param eui64 Extended unique identifier
+     *   @param uid User's id
+     *   @param gid User's group id
      *   @return 0 if success
      */
-    int get(int vid, string&  ip, string&  mac, unsigned int eui64[]);
+    int get(int vid, string&  ip, string&  mac, unsigned int eui64[], int uid, int gid);
 
     /**
      * Ask for a specific lease in the network
      *  @param vid identifier of the VM getting this lease
      *  @param ip ip of lease requested
      *  @param mac mac of the lease
-     *  @param uid of the owner of the VM getting this lease
+     *  @param eui64 Extended unique identifier
+     *  @param uid User's id
+     *  @param gid User's group id
      *  @return 0 if success
      */
-    int set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid);
+    int set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid, int gid);
 
     /**
      * Release an used lease, which becomes unused

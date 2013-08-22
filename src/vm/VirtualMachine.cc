@@ -2009,6 +2009,7 @@ VectorAttribute * VirtualMachine::set_up_attach_nic(
                         VirtualMachineTemplate * tmpl,
                         int                      max_nic_id,
                         int                      uid,
+                        int                      gid,
                         int&                     network_id,
                         string&                  error_str)
 {
@@ -2044,7 +2045,7 @@ VectorAttribute * VirtualMachine::set_up_attach_nic(
     // Acquire the new network lease
     // -------------------------------------------------------------------------
 
-    int rc = vnpool->nic_attribute(new_nic, max_nic_id+1, uid, vm_id, error_str);
+    int rc = vnpool->nic_attribute(new_nic, max_nic_id+1, uid, gid, vm_id, error_str);
 
     if ( rc == -1 ) //-2 is not using a pre-defined network
     {
@@ -2404,7 +2405,7 @@ int VirtualMachine::get_network_leases(string& estr)
             continue;
         }
 
-        rc = vnpool->nic_attribute(nic, i, uid, oid, estr);
+        rc = vnpool->nic_attribute(nic, i, uid, gid, oid, estr);
 
         if (rc == -1)
         {

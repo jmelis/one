@@ -226,6 +226,7 @@ VirtualNetwork * VirtualNetworkPool::get_nic_by_id(const string& id_s,
 int VirtualNetworkPool::nic_attribute(VectorAttribute * nic,
                                       int     nic_id,
                                       int     uid,
+                                      int     gid,
                                       int     vid,
                                       string& error)
 {
@@ -250,7 +251,7 @@ int VirtualNetworkPool::nic_attribute(VectorAttribute * nic,
         return -1;
     }
 
-    int rc = vnet->nic_attribute(nic,vid,uid);
+    int rc = vnet->nic_attribute(nic,vid,uid,gid);
 
     if ( rc == 0 )
     {

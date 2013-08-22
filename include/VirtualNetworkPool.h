@@ -103,6 +103,7 @@ public:
      *    @param nic the nic attribute to be generated
      *    @param nic_id the id for this NIC
      *    @param uid of the VM owner
+     *    @param gid of the VM group
      *    @param vid of the VM requesting the lease
      *    @param error_str string describing the error
      *    @return 0 on success,
@@ -113,6 +114,7 @@ public:
             VectorAttribute*    nic,
             int                 nic_id,
             int                 uid,
+            int                 gid,
             int                 vid,
             string&             error_str);
 

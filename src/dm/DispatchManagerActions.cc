@@ -1349,7 +1349,7 @@ int DispatchManager::attach_nic(
     ostringstream oss;
 
     int max_nic_id;
-    int uid;
+    int uid,gid;
     int oid;
     int network_id;
 
@@ -1390,6 +1390,7 @@ int DispatchManager::attach_nic(
     vm->set_resched(false);
 
     uid = vm->get_uid();
+    gid = vm->get_gid();
     oid = vm->get_oid();
 
     vmpool->update(vm);
@@ -1400,6 +1401,7 @@ int DispatchManager::attach_nic(
                                             tmpl,
                                             max_nic_id,
                                             uid,
+                                            gid,
                                             network_id,
                                             error_str);
     vm = vmpool->get(vid, true);

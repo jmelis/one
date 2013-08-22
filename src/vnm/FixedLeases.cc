@@ -281,7 +281,7 @@ int FixedLeases::unset(const string& ip)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int FixedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
+int FixedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[], int uid, int gid)
 {
     int     rc = -1;
 
@@ -297,7 +297,7 @@ int FixedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
             current = leases.begin();
         }
 
-        if (current->second->used == false)
+        if (current->second->check_avail(uid, gid))
         {
             current->second->used = true;
             current->second->vid  = vid;
@@ -323,15 +323,13 @@ int FixedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int FixedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid)
+int FixedLeases::set(int vid, const string&  ip, string&  mac,
+        unsigned int eui64[], int uid, int gid)
 {
     map<unsigned int,Lease *>::iterator it;
 
     unsigned int    num_ip;
     int             rc;
-
-    User *          user;
-    UserPool *      upool = Nebula::instance().get_upool();
 
     rc = Leases::Lease::ip_to_number(ip,num_ip);
 
@@ -346,33 +344,13 @@ int FixedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui6
     {
         return -1;
     }
-    else if (it->second->is_used()) //it is in use
+    else if (!it->second->check_avail(uid, gid))
     {
         return -1;
     }
 
-    if (it->second->is_reserved()) // check reservation
-    {
-        user = upool->get(uid, false);
-
-        if ( user == 0 )
-        {
-            return -1;
-        }
-
-        int gid = user->get_gid();
-
-        if (gid != GroupPool::ONEADMIN_ID &&
-            it->second->uid != uid && it->second->gid != gid)
-        {
-            return -1; //it is reserved for another user/group
-        }
-    }
-    else
-    {
-        it->second->used = true;
-        n_used++;
-    }
+    it->second->used = true;
+    n_used++;
 
     it->second->vid  = vid;
 

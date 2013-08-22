@@ -1241,6 +1241,7 @@ public:
      *   @param tmpl Template containing a single NIC vector attribute.
      *   @param max_nic_id Max NIC/NIC_ID of the VM
      *   @param uid of the VM owner
+     *   @param gid of the VM group
      *   @param network_id returns the id of the acquired network
      *   @param error_str describes the error
      *
@@ -1252,6 +1253,7 @@ public:
                             VirtualMachineTemplate * tmpl,
                             int                      max_nic_id,
                             int                      uid,
+                            int                      gid,
                             int&                     network_id,
                             string&                  error_str);
 

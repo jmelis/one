@@ -120,39 +120,6 @@ public:
     int reserve_leases(VirtualNetworkTemplate* leases, string& error_msg, int uid, int gid);
 
     /**
-     *    Gets a new lease for a specific VM
-     *    @param vid VM identifier
-     *    @param _ip pointer to string for IP to be stored into
-     *    @param _mac pointer to string for MAC to be stored into
-     *    @param _bridge name of the physical bridge this VN binds to
-     *    @return 0 if success
-     */
-    int get_lease(int vid, string& _ip, string& _mac, string& _bridge)
-    {
-        unsigned int eui64[2];
-
-        _bridge = bridge;
-        return leases->get(vid, _ip, _mac, eui64);
-    };
-
-    /**
-     *    Asks for an specific lease of the given virtual network
-     *    @param vid VM identifier
-     *    @param _ip the ip of the requested lease
-     *    @param _mac pointer to string for MAC to be stored into
-     *    @param _bridge name of the physical bridge this VN binds to
-     *    @param _uid of the owner of the VM getting the lease
-     *    @return 0 if success
-     */
-    int set_lease(int vid, const string& _ip, string& _mac, string& _bridge, int _uid)
-    {
-        unsigned int eui64[2];
-
-        _bridge = bridge;
-        return leases->set(vid, _ip, _mac, eui64, _uid);
-    };
-
-    /**
      *  Release previously given lease
      *    @param _ip IP identifying the lease
      *    @return 0 if success
@@ -215,9 +182,10 @@ public:
      *  @param nic attribute for the VM template
      *  @param vid of the VM getting the lease
      *  @param uid of the owner of the VM getting the lease
+     *  @param gid of the owner's group
      *  @return 0 on success
      */
-    int nic_attribute(VectorAttribute * nic, int vid, int uid);
+    int nic_attribute(VectorAttribute * nic, int vid, int uid, int gid);
 
 private:
 

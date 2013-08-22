@@ -372,7 +372,8 @@ error_common:
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int RangedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
+int RangedLeases::get(int vid, string&  ip, string&  mac,
+        unsigned int eui64[], int uid, int gid)
 {
     unsigned int num_ip;
     int          rc = -1;
@@ -408,7 +409,8 @@ int RangedLeases::get(int vid, string&  ip, string&  mac, unsigned int eui64[])
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int RangedLeases::set(int vid, const string&  ip, string&  mac, unsigned int eui64[], int uid)
+int RangedLeases::set(int vid, const string&  ip, string&  mac,
+        unsigned int eui64[], int uid, int gid)
 {
     unsigned int num_ip;
     unsigned int num_mac[2];

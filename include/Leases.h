@@ -70,9 +70,12 @@ public:
      *  @param ip ip of the returned lease
      *  @param mac mac of  the returned lease
      *  @param eui64 extended unique identifier
+     *  @param uid user's id
+     *  @param gid user's group id
      *  @return 0 if success
      */
-    virtual int get(int vid, string& ip, string& mac, unsigned int *eui64) = 0;
+    virtual int get(int vid, string& ip, string& mac,
+            unsigned int *eui64, int uid, int gid) = 0;
 
     /**
      * Ask for a specific lease in the network
@@ -80,10 +83,12 @@ public:
      *  @param ip ip of lease requested
      *  @param mac mac of the lease
      *  @param eui64 extended unique identifier
-     *  @param uid of the owner of the VM getting this lease
+     *  @param uid user's id
+     *  @param gid user's group id
      *  @return 0 if success
      */
-    virtual int set(int vid, const string&  ip, string&  mac, unsigned int *eui64, int uid) = 0;
+    virtual int set(int vid, const string&  ip, string&  mac,
+            unsigned int *eui64, int uid, int gid) = 0;
 
     /**
      * Releases a used lease, which becomes unused
@@ -223,22 +228,13 @@ protected:
         static int prefix6_to_number(const string& prefix, unsigned int ip[]);
 
         /**
-         * Function to check if the Lease is used
-         * @return true if the lease is used
+         * Returns true if the lease can be used by the given user
+         *
+         * @param uid User's id
+         * @param gid User's group id
+         * @return true if the lease can be used by the given user
          */
-        bool is_used() { return used && vid != -1; }
-
-        /**
-         * Function to check if the Lease is reserved
-         * @return true if the lease is reserved
-         */
-        bool is_reserved() { return used && (uid != -1 || gid != -1); }
-
-        /**
-         * Function to check if the Lease is held
-         * @return true if the lease is held
-         */
-        bool is_held() { return used && vid == -1; }
+        bool check_avail(int uid, int gid) const;
 
         /**
          * Function to print the Lease object into a string in

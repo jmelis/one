@@ -706,7 +706,7 @@ int VirtualNetwork::from_xml(const string &xml_str)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
-int VirtualNetwork::nic_attribute(VectorAttribute *nic, int vid, int uid)
+int VirtualNetwork::nic_attribute(VectorAttribute *nic, int vid, int uid, int gid)
 {
     int rc;
 
@@ -727,11 +727,11 @@ int VirtualNetwork::nic_attribute(VectorAttribute *nic, int vid, int uid)
 
     if (ip.empty())
     {
-        rc = leases->get(vid, ip, mac, eui64);
+        rc = leases->get(vid, ip, mac, eui64, uid, gid);
     }
     else
     {
-        rc = leases->set(vid,ip,mac, eui64, uid);
+        rc = leases->set(vid,ip,mac, eui64, uid, gid);
     }
 
     if ( rc != 0 )

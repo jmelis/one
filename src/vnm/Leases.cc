@@ -247,6 +247,25 @@ void Leases::Lease::mac_to_string(const unsigned int i_mac[], string& mac)
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
+bool Leases::Lease::check_avail(int uid, int gid) const
+{
+    if (used) //it is in use
+    {
+        return false;
+    }
+
+    if ((this->uid != -1 && uid != -1 && this->uid != uid) ||
+        (this->gid != -1 && gid != -1 && this->gid != gid))
+    {
+        return false; //it is reserved for another user/group
+    }
+
+    return true;
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+
 string& Leases::Lease::to_xml(string& str,
                               const unsigned int global[],
                               const unsigned int site[]) const
@@ -548,7 +567,7 @@ int Leases::hold_leases(vector<const Attribute*>&   vector_leases,
         return -1;
     }
 
-    rc = set(-1, ip, mac, tmp, -1);
+    rc = set(-1, ip, mac, tmp, -1, -1);
 
     if ( rc != 0 )
     {
@@ -593,7 +612,7 @@ int Leases::free_leases(vector<const Attribute*>&   vector_leases,
 
     it = leases.find(i_ip);
 
-    if ( it == leases.end() || !it->second->is_held() )
+    if ( it == leases.end() || !it->second->used || it->second->vid != -1 )
     {
         error_msg = "Lease is not on hold.";
         return -1;
