@@ -71,6 +71,20 @@ cmd=CommandParser::CmdParser.new(ARGV) do
         helper.filterflag_to_i(arg)
     end
 
+    UID={
+        :name => "uid",
+        :large => "--uid uid",
+        :format => Integer,
+        :description => "User ID"
+    }
+
+    GID={
+        :name => "gid",
+        :large => "--gid gid",
+        :format => Integer,
+        :description => "Group ID"
+    }
+
     ########################################################################
     # Commands
     ########################################################################
@@ -149,9 +163,12 @@ cmd=CommandParser::CmdParser.new(ARGV) do
 
     # TODO: make uid and gid options, make only one required
 
-    command :reserve, reserve_desc, :vnetid, :ip, :userid, :groupid do
+    command :reserve, reserve_desc, :vnetid, :ip, :options => [UID, GID] do
+        options[:uid] ||= -1
+        options[:gid] ||= -1
+
         helper.perform_action(args[0],options,"lease reserved") do |vn|
-            vn.reserve(args[1], args[2], args[3])
+            vn.reserve(args[1], options[:uid], options[:gid])
         end
     end
 
