@@ -159,8 +159,13 @@ public:
     }
 
 private:
+    // TODO
+    // Class attributes cannot be used to store temporary values, they are
+    // shared for all request_execute calls and these can be concurrent
+/*
     int uid;
     int gid;
+*/
 };
 
 
