@@ -38,10 +38,12 @@ int LibVirtDriver::deployment_description_kvm(
     int     memory;
 
     string  emulator_path = "";
+    stringstream stream;
 
     string  kernel     = "";
     string  initrd     = "";
     string  boot       = "";
+    string  boot_option= "";
     string  root       = "";
     string  kernel_cmd = "";
     string  bootloader = "";
@@ -259,8 +261,11 @@ int LibVirtDriver::deployment_description_kvm(
         file << "\t\t<bootloader>" << bootloader << "</bootloader>" << endl;
     }
 
-
-    file << "\t\t<boot dev='" << boot << "'/>" << endl;
+    stream << boot;
+    while(getline(stream, boot_option, ','))
+    {
+       file << "\t\t<boot dev='" << boot_option << "'/>" << endl;
+    }
 
     file << "\t</os>" << endl;
 
