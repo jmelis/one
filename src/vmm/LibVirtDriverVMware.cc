@@ -40,12 +40,15 @@ int LibVirtDriver::deployment_description_vmware(
 
     string  vcpu;
     string  memory;
+    stringstream stream;
 
     int     memory_in_kb = 0;
 
     string  arch       = "";
     string  guestOS    = "";
     string  pciBridge  = "";
+    string  boot       = "";
+    string  boot_option= "";
 
     const VectorAttribute * features;
 
@@ -156,6 +159,7 @@ int LibVirtDriver::deployment_description_vmware(
         {
             arch    = os->vector_value("ARCH");
             guestOS = os->vector_value("GUESTOS");
+            boot    = os->vector_value("BOOT");
         }
     }
 
@@ -174,11 +178,28 @@ int LibVirtDriver::deployment_description_vmware(
         metadata << "<guestos>" << guestOS << "</guestos>" << endl;
     }
 
+    if ( boot.empty() )
+    {
+        get_default("OS","BOOT",boot);
+
+        if ( boot.empty() )
+        {
+            // Should give error?
+            // goto error_boot;
+        }
+    }
+
     // Start writing to the file with the info we got
 
     file << "\t<os>" << endl;
 
     file << "\t\t<type arch='" << arch << "'>hvm</type>" << endl;
+
+    stream << boot;
+    while(getline(stream, boot_option, ','))
+    {
+       file << "\t\t<boot dev='" << boot_option << "'/>" << endl;
+    }
 
     file << "\t</os>" << endl;
 

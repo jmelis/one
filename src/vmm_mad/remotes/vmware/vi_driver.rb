@@ -37,6 +37,7 @@ ENV['LANG'] = 'C'
 
 $: << LIB_LOCATION+'/ruby/vendors/rbvmomi/lib'
 
+require 'rexml/document'
 require 'rbvmomi'
 require 'yaml'
 
@@ -169,6 +170,41 @@ class VIVm
     end
 
     ########################################################################
+    # Sets boot order
+    ########################################################################
+    def set_boot(xml)
+        boot = REXML::XPath.match(dfile_hash, "/domain/os/boot")
+        devs = boot.map {|dev| dev.attributes['dev'] }.compact
+
+        return if devs.empty?
+
+        interfaces = REXML::XPath.match(dfile_hash,
+                                        "/domain/devices/interface")
+
+        value=devs.map do |dev|
+            case dev.downcase
+            when 'fd'
+                'floppy'
+            when 'hd'
+                'hdd'
+            when 'cdrom'
+                'cdrom'
+            when 'network'
+                nets = []
+                interfaces.length.times {|n| nets << "ethernet#{n}" }
+                nets.compact.join(',')
+            else
+                nil
+            end
+        end.compact.join(',')
+
+        spec=[{ :key => 'bios.bootOrder', :value => value }]
+
+        vmspec = RbVmomi::VIM.VirtualMachineConfigSpec(:extraConfig => spec)
+        @vm.ReconfigVM_Task(:spec => vmspec).wait_for_completion
+    end
+
+    ########################################################################
     #
     ########################################################################
     def attach_nic(bridge, mac, model='default')
@@ -253,7 +289,7 @@ class VIVm
 
         host        = VIDriver::host
         cpuMhz      = host.cpuMhz.to_f
-        @used_cpu   = 
+        @used_cpu   =
                 ((@summary.quickStats.overallCpuUsage.to_f / cpuMhz) * 100).to_s
         @used_cpu   = sprintf('%.2f',@used_cpu).to_s
 

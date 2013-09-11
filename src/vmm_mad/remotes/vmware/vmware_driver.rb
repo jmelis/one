@@ -395,15 +395,14 @@ class VMwareDriver
         guestos   = REXML::XPath.first(dfile_hash, "/domain/metadata/guestos")
         pcibridge = REXML::XPath.first(dfile_hash, "/domain/metadata/pcibridge")
 
-        if (guestos || pcibridge)
-            VIDriver::initialize(@host, false)
+        VIDriver::initialize(@host, false)
+        vivm = VIDriver::VIVm.new(deploy_id, nil)
 
-            vivm = VIDriver::VIVm.new(deploy_id, nil)
+        vivm.set_guestos(guestos.text) if guestos
 
-            vivm.set_guestos(guestos.text) if guestos
+        vivm.set_pcibridge(pcibridge.text) if pcibridge
 
-            vivm.set_pcibridge(pcibridge.text) if pcibridge
-        end
+        vivm.set_boot(dfile_hash)
 
         # Append the raw datavmx to vmx file
         metadata   = REXML::XPath.first(dfile_hash, "/domain/metadata/datavmx")
