@@ -40,11 +40,45 @@ else
     LOCK_FILE=$ONE_LOCATION/var/.lock
 fi
 
+usage() {
+    echo "Usage: one [-f] {start|stop|start-sched|stop-sched|restart-sched}" >&2
+    echo "Options:" >&2
+    echo "  -h  prints this help." >&2
+    echo "  -f  Do not backup log file." >&2
+    echo "  -n  Do not handle locks." >&2
+}
+
 KILL_9_SECONDS=5
 BACKUP="true"
+NOLOCKS="false"
+
+PARAMETERS="hfn"
+
+if [ $(getopt --version | tr -d " ") = "--" ]; then
+    TEMP_OPT=`getopt $PARAMETERS "$@"`
+else
+    TEMP_OPT=`getopt -o $PARAMETERS -n 'one' -- "$@"`
+fi
+
+if [ $? != 0 ] ; then
+    usage
+    exit 1
+fi
+
+eval set -- "$TEMP_OPT"
+
+while true ; do
+    case "$1" in
+        -h) usage; exit 0;;
+        -f) BACKUP="false"   ; shift ;;
+        -n) NOLOCKS="true"   ; shift ;;
+        --) shift ; break ;;
+        *)  usage; exit 1 ;;
+    esac
+done
 
 #------------------------------------------------------------------------------
-# Function that checks for running daemons 
+# Function that checks for running daemons
 #------------------------------------------------------------------------------
 setup()
 {
@@ -203,11 +237,6 @@ start_sched()
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
-if [ "$1" = "-f" ]; then
-    BACKUP="false"
-    shift
-fi
-
 case "$1" in
     start)
         setup
@@ -229,9 +258,7 @@ case "$1" in
         start_sched
         ;;
     *)
-        echo "Usage: one [-f] {start|stop}" >&2
-        echo "Options:" >&2
-        echo "  -f  Do not backup log file." >&2
+        usage
         exit 3
         ;;
 esac
